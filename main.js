@@ -1,14 +1,16 @@
-const dimensionSize = 2000
-const a = 1500
-const shapeDepth = 4; // > 4 significantly lowers fps
+// touch
+const dimensionSize = 3000 // canvas size
+const shapeEdge = 2000 // shape size relative to canvas size
+const shapeDepth = 4; // recursion depth, over 4 significantly lowers performance
 
-const h = Math.sqrt(2 / 3) * a
+// dont touch
+const shapeHeight = Math.sqrt(2 / 3) * shapeEdge
 const canvasDimensions = [dimensionSize, dimensionSize];
 const baseShapeVertices = [
-    [0, -h * 2 / 3, 0],
-    [-a / 2, h / 3, h / 3],
-    [a / 2, h / 3, h / 3],
-    [0, h / 3, -h * 2 / 3]
+    [0, -shapeHeight * 2 / 3, 0],
+    [-shapeEdge / 2, shapeHeight / 3, shapeHeight / 3],
+    [shapeEdge / 2, shapeHeight / 3, shapeHeight / 3],
+    [0, shapeHeight / 3, -shapeHeight * 2 / 3]
 ].map(v => v.map(i => i + dimensionSize / 2));
 
 const farColor = [255, 255, 255];
