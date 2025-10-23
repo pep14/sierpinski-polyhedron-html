@@ -1,16 +1,15 @@
 const dimensionSize = 2000
-const a = 1000
-const shapeDepth = 4;
-const rotation = [-15, -30, 0];
+const a = 1500
+const shapeDepth = 4; // > 4 significantly lowers fps
 
 const h = Math.sqrt(2 / 3) * a
 const canvasDimensions = [dimensionSize, dimensionSize];
-const shapeVertices = rotateShape([
+const baseShapeVertices = [
     [0, -h * 2 / 3, 0],
     [-a / 2, h / 3, h / 3],
     [a / 2, h / 3, h / 3],
     [0, h / 3, -h * 2 / 3]
-].map(v => v.map(i => i + dimensionSize / 2)), rotation);
+].map(v => v.map(i => i + dimensionSize / 2));
 
 const farColor = [255, 255, 255];
 const nearColor = [0, 0, 0];
@@ -20,8 +19,37 @@ const nearColor = [0, 0, 0];
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+var mouseDown = false;
+var lastMousePos = [0, 0];
+var rotation = [0, 0, 0];
+
 canvas.setAttribute("width", canvasDimensions[0]);
 canvas.setAttribute("height", canvasDimensions[1]);
+
+document.addEventListener('mousedown', (event) => {
+        mouseDown = true;
+        lastMousePos = [event.clientX, event.clientY];
+    });
+
+document.addEventListener("mouseup", (_) => mouseDown = false);
+
+document.addEventListener('mousemove', (event) => {
+    if (!mouseDown) return;
+
+    const deltaX = event.clientX - lastMousePos[0];
+    const deltaY = event.clientY - lastMousePos[1];
+
+    console.log(deltaX, deltaY);
+    rotation = [
+        rotation[0] - deltaY,
+        rotation[1] + deltaX,
+        rotation[2]
+    ];
+
+    render();
+
+    lastMousePos = [event.clientX, event.clientY];
+});
 
 const tetrahedronIndices = [
     [0, 1, 2],
@@ -109,7 +137,14 @@ function orderFaces(faces) {
 }
 
 function render() {
-    const faces = orderFaces(generateFaces(shapeDepth, shapeVertices));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const faces = orderFaces(
+        generateFaces(shapeDepth, rotateShape(
+                baseShapeVertices, rotation
+            )
+        )
+    );
 
     console.log(faces)
     for (const face of faces) {
