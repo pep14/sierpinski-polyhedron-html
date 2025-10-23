@@ -2,6 +2,7 @@
 const dimensionSize = 3000 // canvas size
 const shapeEdge = 2000 // shape size relative to canvas size
 const shapeDepth = 4; // recursion depth, over 4 significantly lowers performance
+const mouseSensitivity = 0.15
 
 // dont touch
 const shapeHeight = Math.sqrt(2 / 3) * shapeEdge
@@ -41,10 +42,9 @@ document.addEventListener('mousemove', (event) => {
     const deltaX = event.clientX - lastMousePos[0];
     const deltaY = event.clientY - lastMousePos[1];
 
-    console.log(deltaX, deltaY);
     rotation = [
-        rotation[0] - deltaY,
-        rotation[1] + deltaX,
+        rotation[0] - deltaY * mouseSensitivity,
+        rotation[1] + deltaX * mouseSensitivity,
         rotation[2]
     ];
 
