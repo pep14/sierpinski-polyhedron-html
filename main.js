@@ -5,6 +5,7 @@ const shapeDepth = 4;               // recursion depth, over 4 significantly low
 const mouseSensitivity = 0.15;
 const farColor = [255, 255, 255];   // colour of the fog effect
 const nearColor = [0, 0, 0];        // colour of the shape
+const shadowSideStrength = 0.05     // side darkness multiplier, over 1 will have the same effect as 1
 
 // dont touch
 const shapeHeight = Math.sqrt(2 / 3) * shapeEdge;
@@ -117,9 +118,9 @@ function getZIndex(face) {
 
 function generateFaces(depth, vertices) {
     if (!depth) {
-        return tetrahedronIndices.map(j => {
-            const faceVertices = j.map(i => vertices[i]);
-            return [...faceVertices, getZIndex(faceVertices)]
+        return [...Array(tetrahedronIndices.length).keys()].map(j => {
+            const faceVertices = tetrahedronIndices[j].map(i => vertices[i]);
+            return [...faceVertices, getZIndex(faceVertices), j - 1];
         });
     } else {
         return [0, 1, 2, 3].flatMap(i => generateFaces(
@@ -152,7 +153,7 @@ function render() {
     );
 
     for (const face of faces) {
-        const color = interpolateRGB(face[3] / dimensionSize);
+        const color = interpolateRGB(face[3] * (1 + shadowSideStrength * face[4]) / dimensionSize);
 
         ctx.fillStyle = ctx.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
         ctx.lineWidth = 1;
