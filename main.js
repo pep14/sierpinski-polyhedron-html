@@ -30,11 +30,13 @@ canvas.setAttribute("width", canvasDimensions[0]);
 canvas.setAttribute("height", canvasDimensions[1]);
 
 document.addEventListener('mousedown', (event) => {
-        mouseDown = true;
-        lastMousePos = [event.clientX, event.clientY];
-    });
+    mouseDown = true;
+    lastMousePos = [event.clientX, event.clientY];
+});
 
-document.addEventListener("mouseup", (_) => mouseDown = false);
+document.addEventListener("mouseup", (_) => {
+    mouseDown = false
+});
 
 document.addEventListener('mousemove', (event) => {
     if (!mouseDown) return;
@@ -63,6 +65,14 @@ const tetrahedronIndices = [
     [0, 2, 3],
     [1, 2, 3],
 ];
+
+function interpolateRGB(d) {
+    return [
+        farColor[0] + (nearColor[0] - farColor[0]) * d,
+        farColor[1] + (nearColor[1] - farColor[1]) * d,
+        farColor[2] + (nearColor[2] - farColor[2]) * d
+    ];
+}
 
 function degToRad(deg) {
     return (deg * Math.PI) / 180;
@@ -93,7 +103,7 @@ function rotatePoint(point, pivot, rotation) {
     return [x + pivot[0], y + pivot[1], z + pivot[2]];
 }
 
-function rotateShape(vertices, rotation) {
+function rotateVertices(vertices, rotation) {
     const [x, y, z] = rotation.map(degToRad);
 
     const pivot = [dimensionSize / 2, dimensionSize / 2, dimensionSize / 2];
@@ -106,36 +116,28 @@ function rotateShape(vertices, rotation) {
     ));
 }
 
-function avgVertices(v1, v2) {
-    return v1.map((v, i) => (v + v2[i]) / 2);
+function averagePositions(p1, p2) {
+    return p1.map((v, i) => (v + p2[i]) / 2);
 }
 
-function getZIndex(face) {
+function calculateZIndex(face) {
     var sum = 0;
     face.map(v => sum += v[2]);
     return sum / 3;
 }
 
-function generateFaces(depth, vertices) {
+function generateShape(depth, vertices) {
     if (!depth) {
         return [...Array(tetrahedronIndices.length).keys()].map(j => {
             const faceVertices = tetrahedronIndices[j].map(i => vertices[i]);
-            return [...faceVertices, getZIndex(faceVertices), j - 1];
+            return [...faceVertices, calculateZIndex(faceVertices), j - 1];
         });
     } else {
-        return [0, 1, 2, 3].flatMap(i => generateFaces(
+        return [0, 1, 2, 3].flatMap(i => generateShape(
             depth - 1,
-            vertices.map(v => avgVertices(v, vertices[i]))
+            vertices.map(v => averagePositions(v, vertices[i]))
         ));
     }
-}
-
-function interpolateRGB(d) {
-    return [
-        farColor[0] + (nearColor[0] - farColor[0]) * d,
-        farColor[1] + (nearColor[1] - farColor[1]) * d,
-        farColor[2] + (nearColor[2] - farColor[2]) * d
-    ];
 }
 
 function orderFaces(faces) {
@@ -146,7 +148,7 @@ function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const faces = orderFaces(
-        generateFaces(shapeDepth, rotateShape(
+        generateShape(shapeDepth, rotateVertices(
                 baseShapeVertices, rotation
             )
         )
