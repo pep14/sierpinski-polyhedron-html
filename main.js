@@ -5,20 +5,46 @@ const mouseSensitivity = 0.15;
 const farColor = [255, 255, 255];   // RGB colour of the fog effect
 const nearColor = [0, 0, 0];        // RGB colour of the shape
 const shadowSideStrength = 0.05;    // side darkness multiplier. 0 means no shadow, 1 means only fully lit/dim
+const tetrahedron = false;           // false means octahedron
 
 // maybe touch
-const depthInputMax = 5;            // over 4 depth greatly worsens performance
+const depthInputMax = 5;            // over 4 depth greatly worsens performance (over 3 for octahedra)
 
 // dont touch
 const shapeHeight = Math.sqrt(2 / 3) * shapeEdge;
 const canvasDimensions = [dimensionSize, dimensionSize];
-const baseShapeVertices = [
+
+const baseTetrahedronVertices = [
     [0, -shapeHeight * 2 / 3, 0],
     [-shapeEdge / 2, shapeHeight / 3, shapeHeight / 3],
     [shapeEdge / 2, shapeHeight / 3, shapeHeight / 3],
     [0, shapeHeight / 3, -shapeHeight * 2 / 3]
 ].map(v => v.map(i => i + dimensionSize / 2));
+const tetrahedronIndices = [
+    [0, 1, 2],
+    [0, 1, 3],
+    [0, 2, 3],
+    [1, 2, 3],
+];
 
+const baseOctahedronVertices = [
+    [-shapeEdge / 3 * 2, 0, 0],
+    [shapeEdge / 3 * 2, 0, 0],
+    [0, -shapeEdge / 3 * 2, 0],
+    [0, shapeEdge / 3 * 2, 0],
+    [0, 0, -shapeEdge / 3 * 2],
+    [0, 0, shapeEdge / 3 * 2],
+].map(v => v.map(i => i + dimensionSize / 2));
+const octahedronIndices = [
+    [0, 2, 4],
+    [2, 1, 4],
+    [1, 3, 4],
+    [3, 0, 4],
+    [2, 0, 5],
+    [1, 2, 5],
+    [3, 1, 5],
+    [0, 3, 5]
+];
 
 
 const canvas = document.getElementById("canvas");
@@ -59,13 +85,6 @@ document.addEventListener('mousemove', (event) => {
 
     lastMousePos = [event.clientX, event.clientY];
 });
-
-const tetrahedronIndices = [
-    [0, 1, 2],
-    [0, 1, 3],
-    [0, 2, 3],
-    [1, 2, 3],
-];
 
 function interpolateRGB(d) {
     return [
@@ -127,14 +146,28 @@ function calculateZIndex(face) {
     return sum / 3;
 }
 
-function generateShape(depth, vertices) {
+function generateTetrahedron(depth, vertices) {
     if (!depth) {
         return [...Array(tetrahedronIndices.length).keys()].map(j => {
             const faceVertices = tetrahedronIndices[j].map(i => vertices[i]);
             return [...faceVertices, calculateZIndex(faceVertices), j - 1];
         });
     } else {
-        return [0, 1, 2, 3].flatMap(i => generateShape(
+        return [0, 1, 2, 3].flatMap(i => generateTetrahedron(
+            depth - 1,
+            vertices.map(v => averagePositions(v, vertices[i]))
+        ));
+    }
+}
+
+function generateOctahedron(depth, vertices) {
+    if (!depth) {
+        return [...Array(octahedronIndices.length).keys()].map(j => {
+            const faceVertices = octahedronIndices[j].map(i => vertices[i]);
+            return [...faceVertices, calculateZIndex(faceVertices), j - 1];
+        });
+    } else {
+        return [0, 1, 2, 3, 4, 5].flatMap(i => generateOctahedron(
             depth - 1,
             vertices.map(v => averagePositions(v, vertices[i]))
         ));
@@ -145,12 +178,21 @@ function orderFaces(faces) {
     return [...faces].sort((a, b) => a[3] - b[3]);
 }
 
+function orderFaces(faces) {
+    return [...faces].sort((a, b) => a[3] - b[3]);
+}
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const faces = orderFaces(
-        generateShape(shapeDepth, rotateVertices(
-                baseShapeVertices, rotation
+    faces = tetrahedron ? orderFaces(
+        generateTetrahedron(shapeDepth, rotateVertices(
+                baseTetrahedronVertices, rotation
+            )
+        )
+    ) : orderFaces(
+        generateOctahedron(shapeDepth, rotateVertices(
+                baseOctahedronVertices, rotation
             )
         )
     );
