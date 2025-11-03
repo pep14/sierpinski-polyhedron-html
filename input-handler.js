@@ -35,6 +35,17 @@ function formatDepthInput() {
     render();
 }
 
+function switchMultihedron() {
+    tetrahedron = !tetrahedron;
+    render();
+
+    if (tetrahedron) {
+        multihedronSwitch.innerHTML = "switch to octahedron";
+    } else {
+        multihedronSwitch.innerHTML = "switch to tetrahedron";
+    }
+}
+
 String.prototype.stripNonDec = function() {
     return this.replace(/[^0-9.-]/g, "");
 }

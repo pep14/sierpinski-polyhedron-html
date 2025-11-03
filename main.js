@@ -5,7 +5,6 @@ const mouseSensitivity = 0.15;
 const farColor = [255, 255, 255];   // RGB colour of the fog effect
 const nearColor = [0, 0, 0];        // RGB colour of the shape
 const shadowSideStrength = 0.05;    // side darkness multiplier. 0 means no shadow, 1 means only fully lit/dim
-const tetrahedron = false;           // false means octahedron
 
 // maybe touch
 const depthInputMax = 5;            // over 4 depth greatly worsens performance (over 3 for octahedra)
@@ -28,12 +27,12 @@ const tetrahedronIndices = [
 ];
 
 const baseOctahedronVertices = [
-    [-shapeEdge / 3 * 2, 0, 0],
-    [shapeEdge / 3 * 2, 0, 0],
-    [0, -shapeEdge / 3 * 2, 0],
-    [0, shapeEdge / 3 * 2, 0],
-    [0, 0, -shapeEdge / 3 * 2],
-    [0, 0, shapeEdge / 3 * 2],
+    [-shapeEdge / 2, 0, 0],
+    [shapeEdge / 2, 0, 0],
+    [0, -shapeEdge / 2, 0],
+    [0, shapeEdge / 2, 0],
+    [0, 0, -shapeEdge / 2],
+    [0, 0, shapeEdge / 2],
 ].map(v => v.map(i => i + dimensionSize / 2));
 const octahedronIndices = [
     [0, 2, 4],

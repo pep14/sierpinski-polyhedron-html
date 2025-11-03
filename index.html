@@ -27,6 +27,12 @@ input {
     margin: 5% 0% 0% 5%;
 }
 
+button {
+    width: 88.5%;
+    height: 12%;
+    margin: 5% 0% 0% 5%;
+}
+
 #settings {
     box-sizing:unset;
     position: absolute;
@@ -51,6 +57,7 @@ input {
         <input placeholder="0" id="y-rotation">
         <label>RZ:</label>
         <input placeholder="0" id="z-rotation">
+        <button id="shape-switch" onclick="switchMultihedron()">switch to tetrahedron</button>
     </div>
     
     <script src="globals.js"></script>
