@@ -7,5 +7,4 @@ const depthInput = document.getElementById("depth");
 var rotation = [0, 0, 0];
 var shapeDepth = 3;
 
-
 depthInput.value = shapeDepth;
