@@ -125,14 +125,14 @@ function rotatePoint(point, pivot, rotation) {
 
 function rotateVertices(vertices, rotation) {
     const [x, y, z] = rotation.map(degToRad);
+    const tempRotation = [
+        Math.sin(x), Math.cos(x),
+        Math.sin(y), Math.cos(y),
+        Math.sin(z), Math.cos(z),
+    ];
 
     const pivot = [dimensionSize / 2, dimensionSize / 2, dimensionSize / 2];
-    return vertices.map(v => rotatePoint(v, pivot, 
-        [
-            Math.sin(x), Math.cos(x),
-            Math.sin(y), Math.cos(y),
-            Math.sin(z), Math.cos(z),
-        ]
+    return vertices.map(v => rotatePoint(v, pivot, tempRotation
     ));
 }
 
