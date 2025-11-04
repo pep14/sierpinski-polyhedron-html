@@ -32,11 +32,13 @@ function formatDepthInput() {
     };
 
     depthInput.value = shapeDepth;
+    updateCurrentShape();
     render();
 }
 
 function switchMultihedron() {
     tetrahedron = !tetrahedron;
+    updateCurrentShape();
     render();
 
     if (tetrahedron) {

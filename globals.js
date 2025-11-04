@@ -7,6 +7,8 @@ const multihedronSwitch = document.getElementById("shape-switch");
 
 var rotation = [0, 0, 0];
 var shapeDepth = 3;
-var tetrahedron = false;
+var tetrahedron = true;
+
+var currentShape = undefined;
 
 depthInput.value = shapeDepth;

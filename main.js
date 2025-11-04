@@ -10,15 +10,17 @@ const shadowSideStrength = 0.05;    // side darkness multiplier. 0 means no shad
 const depthInputMax = 5;            // over 4 depth greatly worsens performance (over 3 for octahedra)
 
 // dont touch
-const shapeHeight = Math.sqrt(2 / 3) * shapeEdge;
 const canvasDimensions = [dimensionSize, dimensionSize];
 
-const baseTetrahedronVertices = [
-    [0, -shapeHeight * 2 / 3, 0],
-    [-shapeEdge / 2, shapeHeight / 3, shapeHeight / 3],
-    [shapeEdge / 2, shapeHeight / 3, shapeHeight / 3],
-    [0, shapeHeight / 3, -shapeHeight * 2 / 3]
-].map(v => v.map(i => i + dimensionSize / 2));
+const a = 1;
+const h = Math.sqrt(2 / 3);
+
+const tetrahedronVertices = [
+    [0, -h / 3 * 2, 0],
+    [-a / 2, h / 3, h / 3],
+    [a / 2, h / 3, h / 3],
+    [0, h / 3, -h / 3 * 2]
+].map(j => j.map(i => i * shapeEdge + dimensionSize / 2));
 const tetrahedronIndices = [
     [0, 1, 2],
     [0, 1, 3],
@@ -26,23 +28,23 @@ const tetrahedronIndices = [
     [1, 2, 3],
 ];
 
-const baseOctahedronVertices = [
-    [-shapeEdge / 2, 0, 0],
-    [shapeEdge / 2, 0, 0],
-    [0, -shapeEdge / 2, 0],
-    [0, shapeEdge / 2, 0],
-    [0, 0, -shapeEdge / 2],
-    [0, 0, shapeEdge / 2],
-].map(v => v.map(i => i + dimensionSize / 2));
+const octahedronVertices = [
+    [a, 0, 0],
+    [0, a, 0],
+    [0, 0, a],
+    [-a, 0, 0],
+    [0, -a, 0],
+    [0, 0, -a],
+].map(j => j.map(i => i * shapeEdge / 2 + dimensionSize / 2));
 const octahedronIndices = [
-    [0, 2, 4],
-    [2, 1, 4],
-    [1, 3, 4],
-    [3, 0, 4],
-    [2, 0, 5],
-    [1, 2, 5],
+    [0, 1, 2],
+    [3, 1, 2],
+    [0, 4, 2],
+    [0, 1, 5],
+    [3, 4, 2],
     [3, 1, 5],
-    [0, 3, 5]
+    [0, 4, 5],
+    [3, 4, 5]
 ];
 
 
@@ -85,6 +87,25 @@ document.addEventListener('mousemove', (event) => {
     lastMousePos = [event.clientX, event.clientY];
 });
 
+class Face {
+    constructor(vertices, darkness) {
+        this.vertices = vertices;
+        this.darkness = darkness;
+    }
+}
+
+function updateCurrentShape() {
+    currentShape = generateHedron(
+        shapeDepth, 
+        tetrahedron ? tetrahedronVertices : octahedronVertices,
+        tetrahedron ? tetrahedronIndices : octahedronIndices
+    )
+}
+
+function range(max) {
+    return [...Array(max).keys()];
+}
+
 function interpolateRGB(d) {
     return [
         farColor[0] + (nearColor[0] - farColor[0]) * d,
@@ -97,12 +118,12 @@ function degToRad(deg) {
     return (deg * Math.PI) / 180;
 }
 
-function rotatePoint(point, pivot, rotation) {
+function rotateVertex(vertex, pivot, rotation) {
     const [sinx, cosx, siny, cosy, sinz, cosz] = rotation;
 
-    let x = point[0] - pivot[0];
-    let y = point[1] - pivot[1];
-    let z = point[2] - pivot[2];
+    let x = vertex[0] - pivot[0];
+    let y = vertex[1] - pivot[1];
+    let z = vertex[2] - pivot[2];
 
     let sy = y * cosx - z * sinx;
     let sz = y * sinx + z * cosx;
@@ -131,11 +152,14 @@ function rotateVertices(vertices, rotation) {
     ];
 
     const pivot = [dimensionSize / 2, dimensionSize / 2, dimensionSize / 2];
-    return vertices.map(v => rotatePoint(v, pivot, tempRotation
-    ));
+    return vertices.map(v => rotateVertex(v, pivot, tempRotation));
 }
 
-function averagePositions(p1, p2) {
+function rotateFaces(faces, rotation) {
+    return faces.map(face => new Face(rotateVertices(face.vertices, rotation), face.darkness));
+}
+
+function averageVertices(p1, p2) {
     return p1.map((v, i) => (v + p2[i]) / 2);
 }
 
@@ -145,72 +169,49 @@ function calculateZIndex(face) {
     return sum / 3;
 }
 
-function generateTetrahedron(depth, vertices) {
-    if (!depth) {
-        return [...Array(tetrahedronIndices.length).keys()].map(j => {
-            const faceVertices = tetrahedronIndices[j].map(i => vertices[i]);
-            return [...faceVertices, calculateZIndex(faceVertices), j - 1];
-        });
-    } else {
-        return [0, 1, 2, 3].flatMap(i => generateTetrahedron(
-            depth - 1,
-            vertices.map(v => averagePositions(v, vertices[i]))
-        ));
-    }
-}
-
-function generateOctahedron(depth, vertices) {
-    if (!depth) {
-        return [...Array(octahedronIndices.length).keys()].map(j => {
-            const faceVertices = octahedronIndices[j].map(i => vertices[i]);
-            return [...faceVertices, calculateZIndex(faceVertices), j - 1];
-        });
-    } else {
-        return [0, 1, 2, 3, 4, 5].flatMap(i => generateOctahedron(
-            depth - 1,
-            vertices.map(v => averagePositions(v, vertices[i]))
-        ));
-    }
-}
-
 function orderFaces(faces) {
-    return [...faces].sort((a, b) => a[3] - b[3]);
+    return [...faces].sort((a, b) => calculateZIndex(a.vertices) - calculateZIndex(b.vertices));
 }
 
-function orderFaces(faces) {
-    return [...faces].sort((a, b) => a[3] - b[3]);
+function generateHedron(depth, vertices, indices) {
+    if (!depth) {
+        return range(indices.length).map(j => 
+            new Face(indices[j].map(i => vertices[i]), j)
+        )
+    } else {
+        return range(vertices.length).flatMap(i => 
+            generateHedron(
+                depth - 1,
+                vertices.map(v => averageVertices(v, vertices[i])),
+                indices
+            )
+        )
+    }
 }
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    faces = tetrahedron ? orderFaces(
-        generateTetrahedron(shapeDepth, rotateVertices(
-                baseTetrahedronVertices, rotation
-            )
-        )
-    ) : orderFaces(
-        generateOctahedron(shapeDepth, rotateVertices(
-                baseOctahedronVertices, rotation
-            )
-        )
+    const faces = orderFaces(
+        rotateFaces(currentShape, rotation)
     );
 
     for (const face of faces) {
-        const color = interpolateRGB(face[3] * (1 + shadowSideStrength * face[4]) / dimensionSize);
+        const vertices = face.vertices
+        const color = interpolateRGB(calculateZIndex(vertices) * (1 + shadowSideStrength * face.darkness) / dimensionSize);
 
-        ctx.fillStyle = ctx.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+        ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`; 
         ctx.lineWidth = 1;
 
         ctx.beginPath();
-        ctx.moveTo(face[0][0], face[0][1]);
-        ctx.lineTo(face[1][0], face[1][1]);
-        ctx.lineTo(face[2][0], face[2][1]);
+        ctx.moveTo(vertices[0][0], vertices[0][1]);
+        ctx.lineTo(vertices[1][0], vertices[1][1]);
+        ctx.lineTo(vertices[2][0], vertices[2][1]);
         ctx.closePath();
         
         ctx.fill();
-        ctx.stroke();
     };
 }
 
+updateCurrentShape();
 render();
