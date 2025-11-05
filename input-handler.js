@@ -41,11 +41,9 @@ function switchMultihedron() {
     updateCurrentShape();
     render();
 
-    if (tetrahedron) {
-        multihedronSwitch.innerHTML = "switch to octahedron";
-    } else {
-        multihedronSwitch.innerHTML = "switch to tetrahedron";
-    }
+    multihedronSwitch.innerHTML = tetrahedron 
+    ? "switch to octahedron"
+    : "switch to tetrahedron";
 }
 
 String.prototype.stripNonDec = function() {

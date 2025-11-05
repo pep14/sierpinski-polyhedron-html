@@ -9,6 +9,10 @@ var rotation = [0, 0, 0];
 var shapeDepth = 3;
 var tetrahedron = true;
 
+multihedronSwitch.innerHTML = tetrahedron 
+? "switch to octahedron"
+: "switch to tetrahedron";
+
 var currentShape = undefined;
 
 depthInput.value = shapeDepth;
