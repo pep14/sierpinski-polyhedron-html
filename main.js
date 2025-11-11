@@ -47,30 +47,38 @@ const octahedronIndices = [
     [3, 4, 5]
 ];
 
-
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-var mouseDown = false;
+var inputActive = false;
 var lastMousePos = [0, 0];
 
 canvas.setAttribute("width", canvasDimensions[0]);
 canvas.setAttribute("height", canvasDimensions[1]);
 
-document.addEventListener('mousedown', (event) => {
-    mouseDown = true;
-    lastMousePos = [event.clientX, event.clientY];
+document.addEventListener('pointerdown', (event) => {
+    inputStart(event.clientX, event.clientY);
 });
 
-document.addEventListener("mouseup", (_) => {
-    mouseDown = false
+document.addEventListener("pointerup", (_) => {
+    inputEnd();
 });
 
-document.addEventListener('mousemove', (event) => {
-    if (!mouseDown) return;
+document.addEventListener('pointermove', (event) => {
+    inputIntermediate(event.clientX, event.clientY);
+});
 
-    const dx = event.clientX - lastMousePos[0];
-    const dy = event.clientY - lastMousePos[1];
+function inputStart(x, y) {
+    inputActive = true;
+    lastMousePos = [x, y];
+}
+
+function inputEnd() {
+    inputActive = false
+}
+
+function inputIntermediate(x, y) {
+    if (!inputActive) return;
+
+    const dx = x - lastMousePos[0];
+    const dy = y - lastMousePos[1];
 
     rotation = [
         rotation[0] - dy * mouseSensitivity,
@@ -84,8 +92,8 @@ document.addEventListener('mousemove', (event) => {
 
     render();
 
-    lastMousePos = [event.clientX, event.clientY];
-});
+    lastMousePos = [x, y];
+}
 
 class Face {
     constructor(vertices, darkness) {

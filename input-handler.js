@@ -1,3 +1,9 @@
+document.addEventListener(
+    'touchmove',
+    function(e) {e.preventDefault();}, 
+    {passive: false}
+);
+
 [xRotationInput, yRotationInput, zRotationInput].map(input => {
     input.addEventListener("input", function() {formatDegInput(input)});
     input.value = 0;
@@ -41,9 +47,17 @@ function switchMultihedron() {
     updateCurrentShape();
     render();
 
-    multihedronSwitch.innerHTML = tetrahedron 
-    ? "switch to octahedron"
-    : "switch to tetrahedron";
+    if (tetrahedron) {
+        multihedronSwitch.innerHTML = "switch to octahedron";
+    } else {
+        multihedronSwitch.innerHTML = "switch to tetrahedron";
+    }
+}
+
+function toggleSettings() {
+    settings.style.visibility = 
+        (settings.style.visibility == "hidden") ?
+        "visible" : "hidden"
 }
 
 String.prototype.stripNonDec = function() {

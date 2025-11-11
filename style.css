@@ -1,8 +1,7 @@
-
-
 body {
     color: white;
     font-family: Arial, Helvetica, sans-serif;
+    overscroll-behavior: none;
 }
 
 canvas {
@@ -10,8 +9,8 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    height: 100vh;
-    width: 100vh;
+    width: 100vmin;
+    height: 100vmin;
 }
 
 label {
@@ -31,12 +30,23 @@ button {
 }
 
 #settings {
-    box-sizing:unset;
+    box-sizing: unset;
     position: absolute;
     top: 2vh;
     left: 2vh;
     height: 300px;
     width: 300px;
+    background-color: #404040;
+    outline: 2px solid #202020;
+}
+
+#settings-toggle {
+    position: absolute;
+    margin: 0%;
+    top: calc(2vh - 20px);
+    left: calc(2vh - 20px);
+    height: 40px;
+    width: 40px;
     background-color: #404040;
     outline: 2px solid #202020;
 }

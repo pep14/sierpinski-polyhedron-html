@@ -4,14 +4,15 @@ const zRotationInput = document.getElementById("z-rotation");
 
 const depthInput = document.getElementById("depth");
 const multihedronSwitch = document.getElementById("shape-switch");
+const settings = document.getElementById("settings");
+const settingsToggle = document.getElementById("settings-toggle")
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
 var rotation = [0, 0, 0];
 var shapeDepth = 3;
 var tetrahedron = true;
-
-multihedronSwitch.innerHTML = tetrahedron 
-? "switch to octahedron"
-: "switch to tetrahedron";
 
 var currentShape = undefined;
 
