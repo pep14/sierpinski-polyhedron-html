@@ -7,7 +7,7 @@ const nearColor = [0, 0, 0];        // RGB colour of the shape
 const shadowSideStrength = 0.05;    // side darkness multiplier. 0 means no shadow, 1 means only fully lit/dim
 
 // maybe touch
-const depthInputMax = 5;            // over 4 depth greatly worsens performance (over 3 for octahedra)
+const depthInputMax = 6;            // over 4 depth greatly worsens performance (over 3 for octahedra)
 
 // dont touch
 const canvasDimensions = [dimensionSize, dimensionSize];
