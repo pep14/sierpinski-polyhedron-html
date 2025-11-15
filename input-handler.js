@@ -43,14 +43,14 @@ function formatDepthInput() {
 }
 
 function switchMultihedron() {
-    tetrahedron = !tetrahedron;
+    chosenShape = (chosenShape + 1) % 3
+
     updateCurrentShape();
     render();
-
-    if (tetrahedron) {
-        multihedronSwitch.innerHTML = "switch to octahedron";
-    } else {
-        multihedronSwitch.innerHTML = "switch to tetrahedron";
+    switch (chosenShape) {
+        case 0: multihedronSwitch.innerHTML = "switch to tetrahedron";break;
+        case 1: multihedronSwitch.innerHTML = "switch to octahedron";break;
+        case 2: multihedronSwitch.innerHTML = "switch to dodecahedron";break;
     }
 }
 

@@ -11,8 +11,8 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 var rotation = [0, 0, 0];
-var shapeDepth = 3;
-var tetrahedron = true;
+var shapeDepth = 2;
+var chosenShape = 0;
 
 var currentShape = undefined;
 

@@ -7,13 +7,16 @@ const nearColor = [0, 0, 0];        // RGB colour of the shape
 const shadowSideStrength = 0.05;    // side darkness multiplier. 0 means no shadow, 1 means only fully lit/dim
 
 // maybe touch
-const depthInputMax = 6;            // over 4 depth greatly worsens performance (over 3 for octahedra)
+const depthInputMax = 5;            // over 4 depth greatly worsens performance (over 3 for octahedra)
 
 // dont touch
 const canvasDimensions = [dimensionSize, dimensionSize];
 
 const a = 1;
 const h = Math.sqrt(2 / 3);
+const p = (1 + Math.sqrt(5)) / 2;
+const P = 1 / p
+const t = P / p
 
 const tetrahedronVertices = [
     [0, -h / 3 * 2, 0],
@@ -46,6 +49,34 @@ const octahedronIndices = [
     [0, 4, 5],
     [3, 4, 5]
 ];
+
+const dodecahedronVertices = [
+    [ 1,  1,  1], [-1,  1,  1], [ 1, -1,  1], [ 1,  1, -1],
+    [-1, -1,  1], [ 1, -1, -1], [-1,  1, -1], [-1, -1, -1],
+    [ 0,  p,  P], [ 0, -p,  P], [ 0,  p, -P], [ 0, -p, -P],
+    [ P,  0,  p], [-P,  0,  p], [ P,  0, -p], [-P,  0, -p],
+    [ p,  P,  0], [-p,  P,  0], [ p, -P,  0], [-p, -P,  0]
+].map(j => j.map(i => i * shapeEdge / 3 + dimensionSize / 2));
+const dodecahedronIndices = [
+    [1, 13, 4, 19, 17],
+    [1, 8, 10, 6, 17],
+    [0, 8, 1, 13, 12],
+    [0, 8, 10, 3, 16],
+    [0, 12, 2, 18, 16],
+    [2, 9, 4, 13, 12],
+    [2, 9, 11, 5, 18],
+    [3, 10, 6, 15, 14],
+    [3, 14, 5, 18, 16],
+    [4, 9, 11, 7, 19],
+    [5, 11, 7, 15, 14],
+    [6, 15, 7, 19, 17]
+];
+
+const shapeOptions = [
+    [ tetrahedronVertices, tetrahedronIndices ],
+    [  octahedronVertices, octahedronIndices  ],
+    [dodecahedronVertices, dodecahedronIndices],
+]
 
 var inputActive = false;
 var lastMousePos = [0, 0];
@@ -105,8 +136,8 @@ class Face {
 function updateCurrentShape() {
     currentShape = generateHedron(
         shapeDepth, 
-        tetrahedron ? tetrahedronVertices : octahedronVertices,
-        tetrahedron ? tetrahedronIndices : octahedronIndices
+        shapeOptions[chosenShape][0],
+        shapeOptions[chosenShape][1],
     )
 }
 
@@ -168,13 +199,20 @@ function rotateFaces(faces, rotation) {
 }
 
 function averageVertices(p1, p2) {
-    return p1.map((v, i) => (v + p2[i]) / 2);
+    const T = chosenShape - 2 ? 0.5 : t;
+
+    return [
+        p1[0] * T + p2[0] * (1 - T),
+        p1[1] * T + p2[1] * (1 - T),
+        p1[2] * T + p2[2] * (1 - T)
+    ];
 }
 
-function calculateZIndex(face) {
-    var sum = 0;
-    face.map(v => sum += v[2]);
-    return sum / 3;
+function calculateZIndex(vertices) {
+    let sum = 0;
+    for (const v of vertices) 
+        sum += v[2];
+    return sum / vertices.length;
 }
 
 function orderFaces(faces) {
@@ -212,9 +250,8 @@ function render() {
         ctx.lineWidth = 1;
 
         ctx.beginPath();
-        ctx.moveTo(vertices[0][0], vertices[0][1]);
-        ctx.lineTo(vertices[1][0], vertices[1][1]);
-        ctx.lineTo(vertices[2][0], vertices[2][1]);
+        for (const vertex of vertices) 
+            ctx.lineTo(vertex[0], vertex[1]);
         ctx.closePath();
         
         ctx.fill();
